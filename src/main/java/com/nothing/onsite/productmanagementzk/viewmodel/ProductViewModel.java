@@ -1,0 +1,169 @@
+package com.nothing.onsite.productmanagementzk.viewmodel;
+
+import com.nothing.onsite.productmanagementzk.model.Category;
+import com.nothing.onsite.productmanagementzk.model.Product;
+import com.nothing.onsite.productmanagementzk.repository.CategoryRepository;
+import com.nothing.onsite.productmanagementzk.repository.ProductRepository;
+import org.springframework.stereotype.Component;
+import org.zkoss.bind.annotation.*;
+import org.zkoss.zk.ui.select.annotation.VariableResolver;
+import org.zkoss.zk.ui.select.annotation.WireVariable;
+import org.zkoss.zkplus.spring.DelegatingVariableResolver;
+import org.zkoss.zul.Messagebox;
+
+import java.util.List;
+
+@Component
+@VariableResolver(DelegatingVariableResolver.class)
+public class ProductViewModel {
+
+    @WireVariable
+    private ProductRepository productRepository;
+    
+    @WireVariable
+    private CategoryRepository categoryRepository;
+    
+    private List<Product> productList;
+    private Product selectedProduct;
+    private Product newProduct = new Product();
+    private List<Category> categoryList;
+    
+    @Init
+    public void init() {
+        loadData();
+    }
+    
+    private void loadData() {
+        try {
+            productList = productRepository.findAll();
+            categoryList = categoryRepository.findAll();
+            
+            // Đảm bảo newProduct có một category mặc định nếu có danh mục
+            if (categoryList != null && !categoryList.isEmpty() && newProduct.getCategory() == null) {
+                newProduct.setCategory(categoryList.get(0));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Messagebox.show("Lỗi khi tải dữ liệu: " + e.getMessage(), "Lỗi", Messagebox.OK, Messagebox.ERROR);
+        }
+    }
+    
+    @Command
+    @NotifyChange({"productList", "selectedProduct", "newProduct"})
+    public void saveProduct() {
+        try {
+            if (newProduct.getId() == null) {
+                productRepository.save(newProduct);
+            } else {
+                // Sửa lỗi: Cập nhật sản phẩm đã chọn với dữ liệu từ newProduct
+                selectedProduct.setName(newProduct.getName());
+                selectedProduct.setDescription(newProduct.getDescription());
+                selectedProduct.setPrice(newProduct.getPrice());
+                selectedProduct.setStock(newProduct.getStock());
+                selectedProduct.setImageUrl(newProduct.getImageUrl());
+                selectedProduct.setCategory(newProduct.getCategory());
+                productRepository.save(selectedProduct);
+            }
+            loadData();
+            newProduct = new Product();
+            selectedProduct = null;
+            
+            // Đặt category mặc định cho sản phẩm mới
+            if (categoryList != null && !categoryList.isEmpty()) {
+                newProduct.setCategory(categoryList.get(0));
+            }
+            
+            Messagebox.show("Lưu sản phẩm thành công!", "Thông báo", Messagebox.OK, Messagebox.INFORMATION);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Messagebox.show("Lỗi khi lưu sản phẩm: " + e.getMessage(), "Lỗi", Messagebox.OK, Messagebox.ERROR);
+        }
+    }
+    
+    @Command
+    @NotifyChange({"selectedProduct", "newProduct"})
+    public void editProduct(@BindingParam("product") Product product) {
+        try {
+            selectedProduct = product;
+            newProduct = new Product();
+            newProduct.setId(product.getId());
+            newProduct.setName(product.getName());
+            newProduct.setDescription(product.getDescription());
+            newProduct.setPrice(product.getPrice());
+            newProduct.setStock(product.getStock());
+            newProduct.setImageUrl(product.getImageUrl());
+            newProduct.setCategory(product.getCategory());
+        } catch (Exception e) {
+            e.printStackTrace();
+            Messagebox.show("Lỗi khi chỉnh sửa sản phẩm: " + e.getMessage(), "Lỗi", Messagebox.OK, Messagebox.ERROR);
+        }
+    }
+    
+    @Command
+    @NotifyChange({"productList", "selectedProduct", "newProduct"})
+    public void deleteProduct(@BindingParam("product") Product product) {
+        try {
+            if (Messagebox.show("Bạn có chắc chắn muốn xóa sản phẩm này?", "Xác nhận", 
+                    Messagebox.YES | Messagebox.NO, Messagebox.QUESTION) == Messagebox.YES) {
+                productRepository.delete(product);
+                loadData();
+                selectedProduct = null;
+                newProduct = new Product();
+                
+                // Đặt category mặc định cho sản phẩm mới
+                if (categoryList != null && !categoryList.isEmpty()) {
+                    newProduct.setCategory(categoryList.get(0));
+                }
+                
+                Messagebox.show("Xóa sản phẩm thành công!", "Thông báo", Messagebox.OK, Messagebox.INFORMATION);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Messagebox.show("Lỗi khi xóa sản phẩm: " + e.getMessage(), "Lỗi", Messagebox.OK, Messagebox.ERROR);
+        }
+    }
+    
+    @Command
+    @NotifyChange({"selectedProduct", "newProduct"})
+    public void newProduct() {
+        try {
+            selectedProduct = null;
+            newProduct = new Product();
+            
+            // Đặt category mặc định cho sản phẩm mới
+            if (categoryList != null && !categoryList.isEmpty()) {
+                newProduct.setCategory(categoryList.get(0));
+            }
+            
+            // Thêm log để debug
+            System.out.println("New product created: " + newProduct);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Messagebox.show("Lỗi khi tạo sản phẩm mới: " + e.getMessage(), "Lỗi", Messagebox.OK, Messagebox.ERROR);
+        }
+    }
+
+    public List<Product> getProductList() {
+        return productList;
+    }
+
+    public Product getSelectedProduct() {
+        return selectedProduct;
+    }
+
+    public void setSelectedProduct(Product selectedProduct) {
+        this.selectedProduct = selectedProduct;
+    }
+
+    public Product getNewProduct() {
+        return newProduct;
+    }
+
+    public void setNewProduct(Product newProduct) {
+        this.newProduct = newProduct;
+    }
+
+    public List<Category> getCategoryList() {
+        return categoryList;
+    }
+} 

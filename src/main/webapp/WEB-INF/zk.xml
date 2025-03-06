@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zk>
+    <config-name>zk</config-name>
+    <system-config>
+        <disable-event-thread>false</disable-event-thread>
+    </system-config>
+    
+    <listener>
+        <listener-class>org.zkoss.zkplus.spring.DelegatingVariableResolver</listener-class>
+    </listener>
+    
+    <library-property>
+        <name>org.zkoss.zk.ui.composer.autowire.zk</name>
+        <value>true</value>
+    </library-property>
+    
+    <library-property>
+        <name>org.zkoss.zk.ui.composer.autowire.spring</name>
+        <value>true</value>
+    </library-property>
+    
+    <library-property>
+        <name>org.zkoss.zkplus.spring.DelegatingVariableResolver.applicationContext.class</name>
+        <value>org.springframework.web.context.support.WebApplicationContextUtils</value>
+    </library-property>
+</zk> 

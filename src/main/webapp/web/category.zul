@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?variable-resolver class="org.zkoss.zkplus.spring.DelegatingVariableResolver"?>
+<zk>
+    <style>
+        .category-form {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .category-list {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .button-container {
+            margin-bottom: 10px;
+        }
+        .selected-row {
+            background-color: #e6f7ff;
+        }
+    </style>
+    
+    <window title="Quản lý danh mục" border="normal" width="100%" 
+            apply="org.zkoss.bind.BindComposer"
+            viewModel="@id('vm') @init('com.nothing.onsite.productmanagementzk.viewmodel.CategoryViewModel')">
+        <borderlayout height="600px">
+            <north size="50px" border="none">
+                <div class="button-container">
+                    <button label="Quay lại trang chủ" href="/"/>
+                    <button label="Thêm danh mục mới" onClick="@command('newCategory')" />
+                </div>
+            </north>
+            
+            <west size="65%" border="none" splittable="true" minsize="300" autoscroll="true">
+                <div class="category-list">
+                    <listbox model="@load(vm.categoryList)" selectedItem="@bind(vm.selectedCategory)" 
+                             emptyMessage="Không có danh mục nào" hflex="1" height="550px"
+                             onSelect="@command('editCategory', category=vm.selectedCategory)">
+                        <listhead>
+                            <listheader label="ID" width="50px" />
+                            <listheader label="Tên danh mục" />
+                            <listheader label="Mô tả" />
+                            <listheader label="Thao tác" width="100px" />
+                        </listhead>
+                        <template name="model">
+                            <listitem sclass="@load(vm.selectedCategory eq each ? 'selected-row' : '')">
+                                <listcell label="@load(each.id)" />
+                                <listcell label="@load(each.name)" />
+                                <listcell label="@load(each.description)" />
+                                <listcell>
+                                    <button label="Xóa" onClick="@command('deleteCategory', category=each)" />
+                                </listcell>
+                            </listitem>
+                        </template>
+                    </listbox>
+                </div>
+            </west>
+            
+            <center border="none" autoscroll="true">
+                <div class="category-form">
+                    <vlayout>
+                        <groupbox title="@load(vm.selectedCategory eq null ? 'Thêm danh mục mới' : 'Cập nhật danh mục')" open="true">
+                            <grid>
+                                <columns>
+                                    <column width="120px" />
+                                    <column />
+                                </columns>
+                                <rows>
+                                    <row>
+                                        <label value="Tên danh mục:" />
+                                        <textbox value="@bind(vm.newCategory.name)" hflex="1" />
+                                    </row>
+                                    <row>
+                                        <label value="Mô tả:" />
+                                        <textbox value="@bind(vm.newCategory.description)" hflex="1" rows="3" />
+                                    </row>
+                                </rows>
+                            </grid>
+                            <div style="text-align: center; padding-top: 10px">
+                                <button label="Lưu" onClick="@command('saveCategory')" />
+                                <button label="Hủy" onClick="@command('newCategory')" visible="@load(vm.selectedCategory ne null)" />
+                            </div>
+                        </groupbox>
+                    </vlayout>
+                </div>
+            </center>
+        </borderlayout>
+    </window>
+</zk> 

@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?variable-resolver class="org.zkoss.zkplus.spring.DelegatingVariableResolver"?>
+<zk>
+    <style>
+        .product-form {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .product-list {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .button-container {
+            margin-bottom: 10px;
+        }
+        .selected-row {
+            background-color: #e6f7ff;
+        }
+    </style>
+    
+    <window title="Quản lý sản phẩm" border="normal" width="100%" 
+            apply="org.zkoss.bind.BindComposer"
+            viewModel="@id('vm') @init('com.nothing.onsite.productmanagementzk.viewmodel.ProductViewModel')">
+        <borderlayout height="600px">
+            <north size="50px" border="none">
+                <div class="button-container">
+                    <button label="Quay lại trang chủ" href="/"/>
+                    <button label="Thêm sản phẩm mới" onClick="@command('newProduct')" />
+                </div>
+            </north>
+            
+            <west size="65%" border="none" splittable="true" minsize="300" autoscroll="true">
+                <div class="product-list">
+                    <listbox model="@load(vm.productList)" selectedItem="@bind(vm.selectedProduct)" 
+                             emptyMessage="Không có sản phẩm nào" hflex="1" height="550px"
+                             onSelect="@command('editProduct', product=vm.selectedProduct)">
+                        <listhead>
+                            <listheader label="ID" width="50px" />
+                            <listheader label="Tên sản phẩm" />
+                            <listheader label="Giá" width="120px" />
+                            <listheader label="Số lượng" width="100px" />
+                            <listheader label="Danh mục" width="150px" />
+                            <listheader label="Thao tác" width="100px" />
+                        </listhead>
+                        <template name="model">
+                            <listitem sclass="@load(vm.selectedProduct eq each ? 'selected-row' : '')">
+                                <listcell label="@load(each.id)" />
+                                <listcell label="@load(each.name)" />
+                                <listcell>
+                                    <label value="@load(each.price) @converter('formatedNumber', format='###,###')" />
+                                    <label value=" VNĐ" />
+                                </listcell>
+                                <listcell label="@load(each.stock)" />
+                                <listcell label="@load(each.category.name)" />
+                                <listcell>
+                                    <button label="Xóa" onClick="@command('deleteProduct', product=each)" />
+                                </listcell>
+                            </listitem>
+                        </template>
+                    </listbox>
+                </div>
+            </west>
+            
+            <center border="none" autoscroll="true">
+                <div class="product-form">
+                    <vlayout>
+                        <groupbox title="@load(vm.selectedProduct eq null ? 'Thêm sản phẩm mới' : 'Cập nhật sản phẩm')" open="true">
+                            <grid>
+                                <columns>
+                                    <column width="120px" />
+                                    <column />
+                                </columns>
+                                <rows>
+                                    <row>
+                                        <label value="Tên sản phẩm:" />
+                                        <textbox value="@bind(vm.newProduct.name)" hflex="1" />
+                                    </row>
+                                    <row>
+                                        <label value="Mô tả:" />
+                                        <textbox value="@bind(vm.newProduct.description)" hflex="1" rows="3" />
+                                    </row>
+                                    <row>
+                                        <label value="Giá:" />
+                                        <hlayout>
+                                            <decimalbox value="@bind(vm.newProduct.price)" format="###,###" hflex="1" />
+                                            <label value="VNĐ" />
+                                        </hlayout>
+                                    </row>
+                                    <row>
+                                        <label value="Số lượng:" />
+                                        <intbox value="@bind(vm.newProduct.stock)" hflex="1" />
+                                    </row>
+                                    <row>
+                                        <label value="URL hình ảnh:" />
+                                        <textbox value="@bind(vm.newProduct.imageUrl)" hflex="1" />
+                                    </row>
+                                    <row>
+                                        <label value="Danh mục:" />
+                                        <combobox model="@load(vm.categoryList)" selectedItem="@bind(vm.newProduct.category)" hflex="1">
+                                            <template name="model">
+                                                <comboitem label="@load(each.name)" value="@load(each)" />
+                                            </template>
+                                        </combobox>
+                                    </row>
+                                </rows>
+                            </grid>
+                            <div style="text-align: center; padding-top: 10px">
+                                <button label="Lưu" onClick="@command('saveProduct')" />
+                                <button label="Hủy" onClick="@command('newProduct')" visible="@load(vm.selectedProduct ne null)" />
+                            </div>
+                        </groupbox>
+                        
+                        <groupbox title="Xem trước hình ảnh" visible="@load(not empty vm.newProduct.imageUrl)" open="true">
+                            <image src="@load(vm.newProduct.imageUrl)" width="100%" />
+                        </groupbox>
+                    </vlayout>
+                </div>
+            </center>
+        </borderlayout>
+    </window>
+</zk> 
