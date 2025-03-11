@@ -1,24 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?variable-resolver class="org.zkoss.zkplus.spring.DelegatingVariableResolver"?>
 <zk>
-    <style>
-        .product-form {
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            background-color: #f9f9f9;
-        }
-        .product-list {
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        .button-container {
-            margin-bottom: 10px;
-        }
-        .selected-row {
-            background-color: #e6f7ff;
-        }
-    </style>
+    <?link rel="stylesheet" type="text/css" href="/web/css/styles.css"?>
     
     <window title="Quản lý sản phẩm" border="normal" width="100%" 
             apply="org.zkoss.bind.BindComposer"

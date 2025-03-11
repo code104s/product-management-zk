@@ -1,6 +1,7 @@
 package com.nothing.onsite.productmanagementzk.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
@@ -20,6 +21,8 @@ public class Category {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Tên danh mục không được để trống")
+    @Size(min = 2, max = 50, message = "Tên danh mục phải từ 2 đến 50 ký tự")
     @Column(nullable = false, unique = true)
     private String name;
     

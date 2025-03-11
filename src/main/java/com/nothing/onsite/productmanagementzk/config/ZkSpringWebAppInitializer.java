@@ -10,6 +10,7 @@ public class ZkSpringWebAppInitializer implements WebApplicationInitializer {
 
     @Override
     public void onStartup(ServletContext servletContext) throws ServletException {
+
         // Tạo Spring root context
         AnnotationConfigWebApplicationContext rootContext = new AnnotationConfigWebApplicationContext();
         rootContext.register(ZkSpringConfig.class);

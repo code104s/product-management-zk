@@ -1,15 +1,17 @@
 package com.nothing.onsite.productmanagementzk.viewmodel;
 
+import com.nothing.onsite.productmanagementzk.dao.CategoryDao;
+import com.nothing.onsite.productmanagementzk.dao.ProductDao;
 import com.nothing.onsite.productmanagementzk.model.Category;
 import com.nothing.onsite.productmanagementzk.model.Product;
-import com.nothing.onsite.productmanagementzk.repository.CategoryRepository;
-import com.nothing.onsite.productmanagementzk.repository.ProductRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.zkoss.bind.annotation.*;
 import org.zkoss.zk.ui.select.annotation.VariableResolver;
 import org.zkoss.zk.ui.select.annotation.WireVariable;
 import org.zkoss.zkplus.spring.DelegatingVariableResolver;
 import org.zkoss.zul.Messagebox;
+import org.springframework.jdbc.UncategorizedSQLException;
 
 import java.util.List;
 
@@ -18,10 +20,10 @@ import java.util.List;
 public class ProductViewModel {
 
     @WireVariable
-    private ProductRepository productRepository;
+    private ProductDao productDao;
     
     @WireVariable
-    private CategoryRepository categoryRepository;
+    private CategoryDao categoryDao;
     
     private List<Product> productList;
     private Product selectedProduct;
@@ -35,8 +37,8 @@ public class ProductViewModel {
     
     private void loadData() {
         try {
-            productList = productRepository.findAll();
-            categoryList = categoryRepository.findAll();
+            productList = productDao.findAll();
+            categoryList = categoryDao.findAll();
             
             // Đảm bảo newProduct có một category mặc định nếu có danh mục
             if (categoryList != null && !categoryList.isEmpty() && newProduct.getCategory() == null) {
@@ -52,8 +54,15 @@ public class ProductViewModel {
     @NotifyChange({"productList", "selectedProduct", "newProduct"})
     public void saveProduct() {
         try {
+            // Kiểm tra dữ liệu hợp lệ
+            String validationError = validateProduct(newProduct);
+            if (validationError != null) {
+                Messagebox.show(validationError, "Lỗi", Messagebox.OK, Messagebox.ERROR);
+                return;
+            }
+            
             if (newProduct.getId() == null) {
-                productRepository.save(newProduct);
+                productDao.save(newProduct);
             } else {
                 // Sửa lỗi: Cập nhật sản phẩm đã chọn với dữ liệu từ newProduct
                 selectedProduct.setName(newProduct.getName());
@@ -62,7 +71,7 @@ public class ProductViewModel {
                 selectedProduct.setStock(newProduct.getStock());
                 selectedProduct.setImageUrl(newProduct.getImageUrl());
                 selectedProduct.setCategory(newProduct.getCategory());
-                productRepository.save(selectedProduct);
+                productDao.save(selectedProduct);
             }
             loadData();
             newProduct = new Product();
@@ -74,10 +83,75 @@ public class ProductViewModel {
             }
             
             Messagebox.show("Lưu sản phẩm thành công!", "Thông báo", Messagebox.OK, Messagebox.INFORMATION);
+        } catch (UncategorizedSQLException ex) {
+            String errorMessage = ex.getMessage();
+            String userMessage = "Lỗi khi lưu sản phẩm";
+            
+            // Phân tích lỗi SQL
+            if (errorMessage.contains("Cannot set null to non-nullable column")) {
+                if (errorMessage.contains("description")) {
+                    userMessage = "Mô tả sản phẩm không được để trống";
+                } else if (errorMessage.contains("name")) {
+                    userMessage = "Tên sản phẩm không được để trống";
+                } else if (errorMessage.contains("category_id")) {
+                    userMessage = "Danh mục không được để trống";
+                } else {
+                    userMessage = "Một số trường bắt buộc không được để trống";
+                }
+            }
+            
+            ex.printStackTrace();
+            Messagebox.show(userMessage, "Lỗi", Messagebox.OK, Messagebox.ERROR);
         } catch (Exception e) {
             e.printStackTrace();
             Messagebox.show("Lỗi khi lưu sản phẩm: " + e.getMessage(), "Lỗi", Messagebox.OK, Messagebox.ERROR);
         }
+    }
+    
+    /**
+     * Phương thức kiểm tra dữ liệu sản phẩm hợp lệ
+     * @param product Sản phẩm cần kiểm tra
+     * @return Chuỗi thông báo lỗi hoặc null nếu dữ liệu hợp lệ
+     */
+    private String validateProduct(Product product) {
+        // Kiểm tra tên sản phẩm
+        if (product.getName() == null || product.getName().trim().isEmpty()) {
+            return "Tên sản phẩm không được để trống";
+        }
+        if (product.getName().trim().length() < 2 || product.getName().trim().length() > 100) {
+            return "Tên sản phẩm phải từ 2 đến 100 ký tự";
+        }
+        
+        // Kiểm tra mô tả sản phẩm
+        if (product.getDescription() == null || product.getDescription().trim().isEmpty()) {
+            return "Mô tả sản phẩm không được để trống";
+        }
+        
+        // Kiểm tra giá sản phẩm
+        if (product.getPrice() < 0) {
+            return "Giá sản phẩm không được âm";
+        }
+        
+        // Kiểm tra số lượng tồn kho
+        if (product.getStock() < 0) {
+            return "Số lượng tồn kho không được âm";
+        }
+        
+        // Kiểm tra danh mục
+        if (product.getCategory() == null) {
+            return "Vui lòng chọn danh mục cho sản phẩm";
+        }
+        
+        // Kiểm tra URL hình ảnh (nếu có)
+        if (product.getImageUrl() != null && !product.getImageUrl().trim().isEmpty()) {
+            try {
+                new java.net.URL(product.getImageUrl());
+            } catch (java.net.MalformedURLException e) {
+                return "URL hình ảnh không hợp lệ";
+            }
+        }
+        
+        return null; // Dữ liệu hợp lệ
     }
     
     @Command
@@ -105,7 +179,7 @@ public class ProductViewModel {
         try {
             if (Messagebox.show("Bạn có chắc chắn muốn xóa sản phẩm này?", "Xác nhận", 
                     Messagebox.YES | Messagebox.NO, Messagebox.QUESTION) == Messagebox.YES) {
-                productRepository.delete(product);
+                productDao.delete(product);
                 loadData();
                 selectedProduct = null;
                 newProduct = new Product();
