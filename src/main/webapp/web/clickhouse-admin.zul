@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?variable-resolver class="org.zkoss.zkplus.spring.DelegatingVariableResolver"?>
+<zk>
+    <?link rel="stylesheet" type="text/css" href="/web/css/styles.css"?>
+    
+    <window title="ClickHouse Admin" border="normal" width="100%" height="600px">
+        <borderlayout>
+            <north size="50px" border="none">
+                <div class="button-container">
+                    <button label="Quay lại trang chủ" href="/"/>
+                </div>
+            </north>
+            
+            <center border="none" autoscroll="true">
+                <vlayout spacing="20px" style="padding: 20px;">
+                    <groupbox title="Giao diện quản lý ClickHouse" open="true">
+                        <vlayout spacing="10px">
+                            <label value="ClickHouse cung cấp hai giao diện quản lý web để thực hiện truy vấn và quản lý cơ sở dữ liệu:" style="font-weight: bold;"/>
+                            
+                            <groupbox title="ClickHouse Play UI" open="true">
+                                <vlayout>
+                                    <label value="Giao diện chính thức của ClickHouse, cho phép thực hiện truy vấn và xem kết quả."/>
+                                    <button label="Mở ClickHouse Play UI" href="/api/clickhouse/play" target="_blank"/>
+                                    <label value="URL: http://localhost:8123/play" style="font-style: italic;"/>
+                                </vlayout>
+                            </groupbox>
+                            
+                            <groupbox title="Tabix UI" open="true">
+                                <vlayout>
+                                    <label value="Giao diện quản lý bên thứ ba, cung cấp nhiều tính năng hơn như quản lý bảng, xem cấu trúc, v.v."/>
+                                    <button label="Mở Tabix UI" href="/api/clickhouse/tabix" target="_blank"/>
+                                    <label value="URL: http://localhost:8080" style="font-style: italic;"/>
+                                    <label value="Thông tin đăng nhập:" style="font-weight: bold;"/>
+                                    <label value="Server: clickhouse:8123"/>
+                                    <label value="Username: default"/>
+                                    <label value="Password: clickhouse"/>
+                                    <label value="Database: default"/>
+                                </vlayout>
+                            </groupbox>
+                            
+                            <label value="Lưu ý: Đảm bảo rằng các container Docker đang chạy để truy cập các giao diện này." style="color: red;"/>
+                        </vlayout>
+                    </groupbox>
+                    
+                    <groupbox title="Thông tin kết nối ClickHouse" open="true">
+                        <grid>
+                            <columns>
+                                <column width="200px"/>
+                                <column/>
+                            </columns>
+                            <rows>
+                                <row>
+                                    <label value="JDBC URL:"/>
+                                    <label value="jdbc:clickhouse://localhost:8123/default"/>
+                                </row>
+                                <row>
+                                    <label value="Username:"/>
+                                    <label value="default"/>
+                                </row>
+                                <row>
+                                    <label value="Password:"/>
+                                    <label value="clickhouse"/>
+                                </row>
+                                <row>
+                                    <label value="Driver Class:"/>
+                                    <label value="com.clickhouse.jdbc.ClickHouseDriver"/>
+                                </row>
+                            </rows>
+                        </grid>
+                    </groupbox>
+                </vlayout>
+            </center>
+        </borderlayout>
+    </window>
+</zk> 

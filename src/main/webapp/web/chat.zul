@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?variable-resolver class="org.zkoss.zkplus.spring.DelegatingVariableResolver"?>
+<zk>
+    <?link rel="stylesheet" type="text/css" href="/web/css/styles.css"?>
+    
+    <window title="Chat" border="normal" width="100%" height="600px"
+            apply="org.zkoss.bind.BindComposer"
+            viewModel="@id('vm') @init('com.nothing.onsite.productmanagementzk.viewmodel.ChatViewModel')"
+            onClose="@command('onClose')">
+        <div class="chat-container">
+            <div class="chat-header">
+                <div>
+                    <label value="Phòng chat chung" style="font-size: 18px; font-weight: bold"/>
+                </div>
+                <div>
+                    <label value="Tên hiển thị: "/>
+                    <textbox value="@bind(vm.username)" placeholder="Nhập tên của bạn"/>
+                    <button label="Đổi tên" onClick="@command('changeUsername', newUsername=vm.username)"/>
+                    <button label="Quay lại trang chủ" href="/"/>
+                </div>
+            </div>
+            
+            <div class="chat-messages">
+                <listbox id="messageListbox" model="@load(vm.messages)" emptyMessage="Chưa có tin nhắn nào" 
+                         oddRowSclass="none" hflex="1" vflex="1" 
+                         style="border: none; background: transparent;"
+                         selectedItem="@bind(vm.messages[vm.messages.size()-1])"
+                         checkmark="false" multiple="false">
+                    <template name="model" var="msg">
+                        <listitem sclass="message-item @load(msg.sender eq 'System' ? 'message-system' : (msg.sender eq vm.username ? 'message-self' : 'message-other'))" 
+                                 style="border: none; background: transparent;">
+                            <listcell style="border: none; background: transparent;">
+                                <div class="message-header">
+                                    <span class="message-sender">${msg.sender}</span>
+                                    <span class="message-time">
+                                        <label value="@load(msg.timestamp) @converter('formatedDate', format='HH:mm:ss')"/>
+                                    </span>
+                                </div>
+                                <div class="message-content">${msg.content}</div>
+                            </listcell>
+                        </listitem>
+                    </template>
+                </listbox>
+            </div>
+            
+            <div class="chat-input">
+                <textbox value="@bind(vm.message)" placeholder="Nhập tin nhắn..." hflex="1" 
+                         onOK="@command('sendMessage')"/>
+                <button label="Gửi" onClick="@command('sendMessage')"/>
+            </div>
+        </div>
+    </window>
+</zk> 
