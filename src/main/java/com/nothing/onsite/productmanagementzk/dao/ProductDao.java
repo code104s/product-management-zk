@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -42,10 +44,15 @@ public class ProductDao {
         // Validate trước khi lưu
         validateProduct(product);
         
-        if (product.getId() == null) {
+        if (product.getId() == null || product.getId() == 0) {
+            // Lấy ID tiếp theo từ bảng products
+            Long nextId = getNextId();
+            product.setId(nextId);
+            
             // Tạo mới
-            String sql = "INSERT INTO products (name, description, price, stock, image_url, category_id) VALUES (?, ?, ?, ?, ?, ?)";
+            String sql = "INSERT INTO products (id, name, description, price, stock, image_url, category_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
             jdbcTemplate.update(sql, 
+                product.getId(),
                 product.getName(), 
                 product.getDescription(), 
                 product.getPrice(), 
@@ -54,12 +61,10 @@ public class ProductDao {
                 product.getCategory().getId()
             );
             
-            // Lấy ID mới nhất
-            Long newId = jdbcTemplate.queryForObject("SELECT max(id) FROM products", Long.class);
-            product.setId(newId);
+            System.out.println("Đã tạo sản phẩm mới với ID: " + product.getId());
         } else {
             // Cập nhật
-            String sql = "UPDATE products SET name = ?, description = ?, price = ?, stock = ?, image_url = ?, category_id = ? WHERE id = ?";
+            String sql = "ALTER TABLE products UPDATE name = ?, description = ?, price = ?, stock = ?, image_url = ?, category_id = ? WHERE id = ?";
             jdbcTemplate.update(sql, 
                 product.getName(), 
                 product.getDescription(), 
@@ -69,6 +74,24 @@ public class ProductDao {
                 product.getCategory().getId(),
                 product.getId()
             );
+            System.out.println("Đã cập nhật sản phẩm với ID: " + product.getId());
+        }
+    }
+    
+    /**
+     * Lấy ID tiếp theo cho bảng products
+     * @return ID tiếp theo
+     */
+    private Long getNextId() {
+        try {
+            // Lấy ID lớn nhất hiện tại
+            Long maxId = jdbcTemplate.queryForObject("SELECT max(id) FROM products", Long.class);
+            // Nếu không có bản ghi nào, bắt đầu từ 1
+            return maxId != null ? maxId + 1 : 1L;
+        } catch (Exception e) {
+            // Nếu có lỗi, bắt đầu từ 1
+            System.out.println("Lỗi khi lấy ID tiếp theo: " + e.getMessage());
+            return 1L;
         }
     }
     
@@ -109,8 +132,9 @@ public class ProductDao {
     }
     
     public void delete(Product product) {
-        String sql = "DELETE FROM products WHERE id = ?";
+        String sql = "ALTER TABLE products DELETE WHERE id = ?";
         jdbcTemplate.update(sql, product.getId());
+        System.out.println("Đã xóa sản phẩm với ID: " + product.getId());
     }
     
     public long count() {

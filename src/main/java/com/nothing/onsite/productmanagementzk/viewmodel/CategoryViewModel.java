@@ -55,16 +55,27 @@ public class CategoryViewModel {
                 return;
             }
             
+            // Đảm bảo ID là null nếu là danh mục mới
+            if (newCategory.getId() != null && newCategory.getId() == 0) {
+                System.out.println("Đặt ID = null cho danh mục mới (ID hiện tại = 0)");
+                newCategory.setId(null);
+            }
+            
+            System.out.println("Trước khi lưu - ID danh mục: " + (newCategory.getId() == null ? "null" : newCategory.getId()));
+            
             if (newCategory.getId() == null) {
                 categoryDao.save(newCategory);
+                System.out.println("Danh mục được lưu với ID: " + newCategory.getId());
             } else {
                 // Sửa lỗi: Cập nhật danh mục đã chọn với dữ liệu từ newCategory
                 selectedCategory.setName(newCategory.getName());
                 selectedCategory.setDescription(newCategory.getDescription());
                 categoryDao.save(selectedCategory);
+                System.out.println("Danh mục được cập nhật với ID: " + selectedCategory.getId());
             }
             loadData();
             newCategory = new Category();
+            newCategory.setId(null); // Đảm bảo ID là null cho danh mục mới
             selectedCategory = null;
             
             Messagebox.show("Lưu danh mục thành công!", "Thông báo", Messagebox.OK, Messagebox.INFORMATION);
@@ -175,9 +186,10 @@ public class CategoryViewModel {
         try {
             selectedCategory = null;
             newCategory = new Category();
+            newCategory.setId(null); // Đảm bảo ID là null cho danh mục mới
             
             // Thêm log để debug
-            System.out.println("New category created: " + newCategory);
+            System.out.println("New category created: " + newCategory + ", ID: " + (newCategory.getId() == null ? "null" : newCategory.getId()));
         } catch (Exception e) {
             e.printStackTrace();
             Messagebox.show("Lỗi khi tạo danh mục mới: " + e.getMessage(), "Lỗi", Messagebox.OK, Messagebox.ERROR);

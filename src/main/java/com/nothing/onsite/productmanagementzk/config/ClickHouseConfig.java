@@ -56,7 +56,7 @@ public class ClickHouseConfig {
     
     // Phương thức này sẽ được gọi khi ứng dụng khởi động để tạo các bảng cần thiết
     @Bean
-    public ClickHouseInitializer clickHouseInitializer(JdbcTemplate jdbcTemplate) {
-        return new ClickHouseInitializer(jdbcTemplate);
+    public ClickHouseInitializer clickHouseInitializer() {
+        return new ClickHouseInitializer();
     }
 } 

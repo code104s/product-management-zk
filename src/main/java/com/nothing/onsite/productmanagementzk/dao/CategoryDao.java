@@ -39,18 +39,25 @@ public class CategoryDao {
             throw new IllegalArgumentException("Tên danh mục đã tồn tại: " + category.getName());
         }
         
-        if (category.getId() == null) {
-            // Tạo mới
-            String sql = "INSERT INTO categories (name, description) VALUES (?, ?)";
-            jdbcTemplate.update(sql, category.getName(), category.getDescription());
+        if (category.getId() == null || category.getId() == 0) {
+            // Lấy ID tiếp theo từ bảng categories
+            Long nextId = getNextId();
+            category.setId(nextId);
             
-            // Lấy ID mới nhất
-            Long newId = jdbcTemplate.queryForObject("SELECT max(id) FROM categories", Long.class);
-            category.setId(newId);
+            // Tạo mới
+            String sql = "INSERT INTO categories (id, name, description) VALUES (?, ?, ?)";
+            jdbcTemplate.update(sql, 
+                category.getId(),
+                category.getName(), 
+                category.getDescription()
+            );
+            
+            System.out.println("Đã tạo danh mục mới với ID: " + category.getId());
         } else {
             // Cập nhật
-            String sql = "UPDATE categories SET name = ?, description = ? WHERE id = ?";
+            String sql = "ALTER TABLE categories UPDATE name = ?, description = ? WHERE id = ?";
             jdbcTemplate.update(sql, category.getName(), category.getDescription(), category.getId());
+            System.out.println("Đã cập nhật danh mục với ID: " + category.getId());
         }
     }
     
@@ -95,9 +102,27 @@ public class CategoryDao {
         }
     }
     
+    /**
+     * Lấy ID tiếp theo cho bảng categories
+     * @return ID tiếp theo
+     */
+    private Long getNextId() {
+        try {
+            // Lấy ID lớn nhất hiện tại
+            Long maxId = jdbcTemplate.queryForObject("SELECT max(id) FROM categories", Long.class);
+            // Nếu không có bản ghi nào, bắt đầu từ 1
+            return maxId != null ? maxId + 1 : 1L;
+        } catch (Exception e) {
+            // Nếu có lỗi, bắt đầu từ 1
+            System.out.println("Lỗi khi lấy ID tiếp theo: " + e.getMessage());
+            return 1L;
+        }
+    }
+    
     public void delete(Category category) {
-        String sql = "DELETE FROM categories WHERE id = ?";
+        String sql = "ALTER TABLE categories DELETE WHERE id = ?";
         jdbcTemplate.update(sql, category.getId());
+        System.out.println("Đã xóa danh mục với ID: " + category.getId());
     }
     
     public long count() {

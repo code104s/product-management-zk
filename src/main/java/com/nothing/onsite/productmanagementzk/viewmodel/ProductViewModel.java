@@ -61,8 +61,17 @@ public class ProductViewModel {
                 return;
             }
             
+            // Đảm bảo ID là null nếu là sản phẩm mới
+            if (newProduct.getId() != null && newProduct.getId() == 0) {
+                System.out.println("Đặt ID = null cho sản phẩm mới (ID hiện tại = 0)");
+                newProduct.setId(null);
+            }
+            
+            System.out.println("Trước khi lưu - ID sản phẩm: " + (newProduct.getId() == null ? "null" : newProduct.getId()));
+            
             if (newProduct.getId() == null) {
                 productDao.save(newProduct);
+                System.out.println("Sản phẩm được lưu với ID: " + newProduct.getId());
             } else {
                 // Sửa lỗi: Cập nhật sản phẩm đã chọn với dữ liệu từ newProduct
                 selectedProduct.setName(newProduct.getName());
@@ -72,9 +81,11 @@ public class ProductViewModel {
                 selectedProduct.setImageUrl(newProduct.getImageUrl());
                 selectedProduct.setCategory(newProduct.getCategory());
                 productDao.save(selectedProduct);
+                System.out.println("Sản phẩm được cập nhật với ID: " + selectedProduct.getId());
             }
             loadData();
             newProduct = new Product();
+            newProduct.setId(null); // Đảm bảo ID là null cho sản phẩm mới
             selectedProduct = null;
             
             // Đặt category mặc định cho sản phẩm mới
@@ -203,6 +214,7 @@ public class ProductViewModel {
         try {
             selectedProduct = null;
             newProduct = new Product();
+            newProduct.setId(null); // Đảm bảo ID là null cho sản phẩm mới
             
             // Đặt category mặc định cho sản phẩm mới
             if (categoryList != null && !categoryList.isEmpty()) {
@@ -210,7 +222,7 @@ public class ProductViewModel {
             }
             
             // Thêm log để debug
-            System.out.println("New product created: " + newProduct);
+            System.out.println("New product created: " + newProduct + ", ID: " + (newProduct.getId() == null ? "null" : newProduct.getId()));
         } catch (Exception e) {
             e.printStackTrace();
             Messagebox.show("Lỗi khi tạo sản phẩm mới: " + e.getMessage(), "Lỗi", Messagebox.OK, Messagebox.ERROR);
