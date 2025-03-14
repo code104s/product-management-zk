@@ -1,0 +1,27 @@
+{
+  "name": "device-alarm-processor",
+  "config": {
+    "connector.class": "org.apache.kafka.connect.mirror.MirrorSourceConnector",
+    "tasks.max": "1",
+    "source.cluster.alias": "source",
+    "target.cluster.alias": "target",
+    "source.cluster.bootstrap.servers": "kafka:9092",
+    "target.cluster.bootstrap.servers": "kafka:9092",
+    "topics": "device-alarm-topic",
+    "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "key.converter.schemas.enable": "false",
+    "value.converter.schemas.enable": "false",
+    "source->target.topics": "device-alarm-topic:device-alarm-processed",
+    "sync.topic.configs.enabled": "true",
+    "sync.topic.acls.enabled": "false",
+    "emit.heartbeats.enabled": "false",
+    "emit.checkpoints.enabled": "false",
+    "offset-syncs.topic.replication.factor": "1",
+    "refresh.topics.interval.seconds": "60",
+    "replication.factor": "1",
+    "transforms": "addTimestamp",
+    "transforms.addTimestamp.type": "org.apache.kafka.connect.transforms.InsertField$Value",
+    "transforms.addTimestamp.timestamp.field": "created_at"
+  }
+} 
